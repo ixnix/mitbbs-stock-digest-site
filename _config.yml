@@ -1,7 +1,7 @@
 title: 股海弄潮 每日摘要
 description: Daily digest of stock & investment discussions from newmitbbs.com
-baseurl: ""
-url: "https://ixnix.github.io/mitbbs-stock-digest-site"
+baseurl: "/mitbbs-stock-digest-site"
+url: "https://ixnix.github.io"
 theme: minima
 markdown: kramdown
 permalink: /digests/:year-:month-:day/
