@@ -4,7 +4,7 @@ baseurl: "/mitbbs-stock-digest-site"
 url: "https://ixnix.github.io"
 theme: minima
 markdown: kramdown
-permalink: /digests/:year-:month-:day/
+permalink: /digests/:year/:month/:day/
 
 defaults:
   - scope:
