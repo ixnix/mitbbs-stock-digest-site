@@ -2,13 +2,28 @@
 layout: default
 ---
 
+{% comment %}
+US Federal Holidays - update yearly. Format: YYYY-MM-DD
+{% endcomment %}
+{% assign holidays = "2026-01-01:New Year's Day,2026-01-19:MLK Day,2026-02-16:Presidents' Day,2026-05-25:Memorial Day,2026-06-19:Juneteenth,2026-07-03:Independence Day (observed),2026-09-07:Labor Day,2026-11-26:Thanksgiving,2026-12-25:Christmas" %}
+
 <div class="home">
   {{ content }}
 
   <ul class="post-list" style="margin-top: 1em;">
     {%- for post in site.posts -%}
+    {% assign post_date = post.date | date: "%Y-%m-%d" %}
+    {% assign weekday = post.date | date: "%A" %}
+    {% assign holiday_name = "" %}
+    {% assign holiday_pairs = holidays | split: "," %}
+    {% for pair in holiday_pairs %}
+      {% assign kv = pair | split: ":" %}
+      {% if kv[0] == post_date %}
+        {% assign holiday_name = kv[1] %}
+      {% endif %}
+    {% endfor %}
     <li style="margin-bottom: 0.3em;">
-      <a class="post-link" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+      <a class="post-link" href="{{ post.url | relative_url }}">{{ post_date }} {{ weekday }}{% if holiday_name != "" %} [{{ holiday_name }}]{% endif %}</a>
     </li>
     {%- endfor -%}
   </ul>
