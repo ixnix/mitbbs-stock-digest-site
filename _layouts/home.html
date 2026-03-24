@@ -5,14 +5,10 @@ layout: default
 <div class="home">
   {{ content }}
 
-  <h2>Posts</h2>
-  <ul class="post-list">
+  <ul class="post-list" style="margin-top: 1em;">
     {%- for post in site.posts -%}
-    <li>
-      <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
-      <h3>
-        <a class="post-link" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
-      </h3>
+    <li style="margin-bottom: 0.3em;">
+      <a class="post-link" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
     </li>
     {%- endfor -%}
   </ul>
