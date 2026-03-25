@@ -7,33 +7,111 @@ US Federal Holidays - update yearly. Format: YYYY-MM-DD
 {% endcomment %}
 {% assign holidays = "2026-01-01:New Year's Day,2026-01-19:MLK Day,2026-02-16:Presidents' Day,2026-05-25:Memorial Day,2026-06-19:Juneteenth,2026-07-03:Independence Day (observed),2026-09-07:Labor Day,2026-11-26:Thanksgiving,2026-12-25:Christmas" %}
 
+{% comment %}
+Build a lookup of post dates to URLs and a separate lookup for recaps.
+Week runs Sunday(0) to Saturday(6).
+{% endcomment %}
+{% assign post_lookup = "" %}
+{% assign recap_lookup = "" %}
+{% for post in site.posts %}
+  {% assign d = post.date | date: "%Y-%m-%d" %}
+  {% if post.recap %}
+    {% assign recap_lookup = recap_lookup | append: d | append: "|" | append: post.url | append: "||" %}
+  {% else %}
+    {% assign post_lookup = post_lookup | append: d | append: "|" | append: post.url | append: "||" %}
+  {% endif %}
+{% endfor %}
+
+{% comment %}
+Collect all unique week-start dates (Sundays). Each post's week starts on the previous Sunday.
+We use %w (0=Sun) and compute the Sunday date.
+{% endcomment %}
+{% assign week_starts = "" %}
+{% assign seen_weeks = "" %}
+{% for post in site.posts %}
+  {% unless post.recap %}
+    {% assign dow = post.date | date: "%w" | plus: 0 %}
+    {% assign days_since_sun = dow | times: 86400 %}
+    {% assign sun_epoch = post.date | date: "%s" | minus: days_since_sun %}
+    {% assign week_sun = sun_epoch | date: "%Y-%m-%d" %}
+    {% unless seen_weeks contains week_sun %}
+      {% assign seen_weeks = seen_weeks | append: week_sun | append: "," %}
+      {% assign week_starts = week_starts | append: week_sun | append: "||" %}
+    {% endunless %}
+  {% endunless %}
+{% endfor %}
+
 <div class="home">
   {{ content }}
 
-  {% assign current_month = "" %}
-  {%- for post in site.posts -%}
-    {% assign post_month = post.date | date: "%B %Y" %}
-    {% assign post_date = post.date | date: "%Y-%m-%d" %}
-    {% assign weekday = post.date | date: "%A" %}
-    {% assign holiday_name = "" %}
-    {% assign holiday_pairs = holidays | split: "," %}
-    {% for pair in holiday_pairs %}
-      {% assign kv = pair | split: ":" %}
-      {% if kv[0] == post_date %}
-        {% assign holiday_name = kv[1] %}
+  {% assign weeks = week_starts | split: "||" %}
+  {% for week_sun in weeks %}
+    {% if week_sun == "" %}{% continue %}{% endif %}
+
+    {% comment %} Calculate Saturday (week_sun + 6 days) {% endcomment %}
+    {% assign sun_epoch = week_sun | date: "%s" | plus: 0 %}
+    {% assign sat_epoch = sun_epoch | plus: 518400 %}
+    {% assign week_sat = sat_epoch | date: "%Y-%m-%d" %}
+    {% assign sun_display = sun_epoch | date: "%b %-d" %}
+    {% assign sat_display = sat_epoch | date: "%b %-d, %Y" %}
+
+    <h3 style="margin-top: 1.5em; margin-bottom: 0.4em;">{{ sun_display }} — {{ sat_display }}</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.15em 2em; padding-left: 0.5em;">
+    {% comment %} Generate 7 days: Sun(0) through Sat(6), then recap {% endcomment %}
+    {% for i in (0..6) %}
+      {% assign day_offset = i | times: 86400 %}
+      {% assign day_epoch = sun_epoch | plus: day_offset %}
+      {% assign day_date = day_epoch | date: "%Y-%m-%d" %}
+      {% assign day_weekday = day_epoch | date: "%A" %}
+
+      {% comment %} Check for holiday {% endcomment %}
+      {% assign holiday_name = "" %}
+      {% assign holiday_pairs = holidays | split: "," %}
+      {% for pair in holiday_pairs %}
+        {% assign kv = pair | split: ":" %}
+        {% if kv[0] == day_date %}
+          {% assign holiday_name = kv[1] %}
+        {% endif %}
+      {% endfor %}
+
+      {% comment %} Find post URL for this date {% endcomment %}
+      {% assign found_url = "" %}
+      {% assign entries = post_lookup | split: "||" %}
+      {% for entry in entries %}
+        {% assign parts = entry | split: "|" %}
+        {% if parts[0] == day_date %}
+          {% assign found_url = parts[1] %}
+        {% endif %}
+      {% endfor %}
+
+      <div style="margin-bottom: 0.1em;">
+        {% if found_url != "" %}
+          <a href="{{ found_url | relative_url }}">{{ day_date }} {{ day_weekday }}{% if holiday_name != "" %} [{{ holiday_name }}]{% endif %}</a>
+        {% else %}
+          <span style="color: #999;">{{ day_date }} {{ day_weekday }}{% if holiday_name != "" %} [{{ holiday_name }}]{% endif %}</span>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    {% comment %} Recap cell — bottom right {% endcomment %}
+    {% comment %} Find recap for this week's Saturday date {% endcomment %}
+    {% assign recap_url = "" %}
+    {% assign recap_entries = recap_lookup | split: "||" %}
+    {% for entry in recap_entries %}
+      {% assign parts = entry | split: "|" %}
+      {% if parts[0] == week_sat %}
+        {% assign recap_url = parts[1] %}
       {% endif %}
     {% endfor %}
 
-    {% if post_month != current_month %}
-      {% if current_month != "" %}</ul>{% endif %}
-      {% assign current_month = post_month %}
-      <h3 style="margin-top: 1.2em; margin-bottom: 0.4em;">{{ post_month }}</h3>
-      <ul style="list-style: none; padding-left: 0; margin-top: 0; display: flex; flex-wrap: wrap; gap: 0.2em 2em;">
-    {% endif %}
+    <div style="margin-bottom: 0.1em;">
+      {% if recap_url != "" %}
+        <a href="{{ recap_url | relative_url }}" style="font-weight: bold;">📋 Weekly Recap</a>
+      {% else %}
+        <span style="color: #ccc;">— Recap —</span>
+      {% endif %}
+    </div>
 
-    <li style="margin-bottom: 0.1em; width: 30%;">
-      <a href="{{ post.url | relative_url }}">{{ post_date }} {{ weekday }}{% if holiday_name != "" %} [{{ holiday_name }}]{% endif %}</a>
-    </li>
-  {%- endfor -%}
-  {% if current_month != "" %}</ul>{% endif %}
+    </div>
+  {% endfor %}
 </div>
