@@ -27,11 +27,11 @@ US Federal Holidays - update yearly. Format: YYYY-MM-DD
     {% if post_month != current_month %}
       {% if current_month != "" %}</ul>{% endif %}
       {% assign current_month = post_month %}
-      <h3 style="margin-top: 1.2em; margin-bottom: 0.3em;">{{ post_month }}</h3>
-      <ul style="list-style: none; padding-left: 0.5em; margin-top: 0;">
+      <h3 style="margin-top: 1.2em; margin-bottom: 0.4em;">{{ post_month }}</h3>
+      <ul style="list-style: none; padding-left: 0; margin-top: 0; display: flex; flex-wrap: wrap; gap: 0.2em 2em;">
     {% endif %}
 
-    <li style="margin-bottom: 0.15em; font-size: 0.9em;">
+    <li style="margin-bottom: 0.1em; width: 30%;">
       <a href="{{ post.url | relative_url }}">{{ post_date }} {{ weekday }}{% if holiday_name != "" %} [{{ holiday_name }}]{% endif %}</a>
     </li>
   {%- endfor -%}
