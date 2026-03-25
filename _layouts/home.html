@@ -10,8 +10,9 @@ US Federal Holidays - update yearly. Format: YYYY-MM-DD
 <div class="home">
   {{ content }}
 
-  <ul class="post-list" style="margin-top: 1em;">
-    {%- for post in site.posts -%}
+  {% assign current_month = "" %}
+  {%- for post in site.posts -%}
+    {% assign post_month = post.date | date: "%B %Y" %}
     {% assign post_date = post.date | date: "%Y-%m-%d" %}
     {% assign weekday = post.date | date: "%A" %}
     {% assign holiday_name = "" %}
@@ -22,9 +23,17 @@ US Federal Holidays - update yearly. Format: YYYY-MM-DD
         {% assign holiday_name = kv[1] %}
       {% endif %}
     {% endfor %}
-    <li style="margin-bottom: 0.3em;">
-      <a class="post-link" href="{{ post.url | relative_url }}">{{ post_date }} {{ weekday }}{% if holiday_name != "" %} [{{ holiday_name }}]{% endif %}</a>
+
+    {% if post_month != current_month %}
+      {% if current_month != "" %}</ul>{% endif %}
+      {% assign current_month = post_month %}
+      <h3 style="margin-top: 1.2em; margin-bottom: 0.3em;">{{ post_month }}</h3>
+      <ul style="list-style: none; padding-left: 0.5em; margin-top: 0;">
+    {% endif %}
+
+    <li style="margin-bottom: 0.15em; font-size: 0.9em;">
+      <a href="{{ post.url | relative_url }}">{{ post_date }} {{ weekday }}{% if holiday_name != "" %} [{{ holiday_name }}]{% endif %}</a>
     </li>
-    {%- endfor -%}
-  </ul>
+  {%- endfor -%}
+  {% if current_month != "" %}</ul>{% endif %}
 </div>
