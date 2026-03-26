@@ -62,7 +62,7 @@ We use %w (0=Sun) and compute the Sunday date.
       {% assign day_offset = i | times: 86400 %}
       {% assign day_epoch = sun_epoch | plus: day_offset %}
       {% assign day_date = day_epoch | date: "%Y-%m-%d" %}
-      {% assign day_weekday = day_epoch | date: "%A" %}
+      {% assign day_weekday = day_epoch | date: "%a" %}
 
       {% comment %} Check for holiday {% endcomment %}
       {% assign holiday_name = "" %}
